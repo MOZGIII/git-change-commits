@@ -1,0 +1,37 @@
+#!/bin/bash
+set -euo pipefail
+
+MAP_FILE="$(git rev-parse --show-toplevel)/.git/git-change-commits-map"
+
+SETUP="$(cat <<END
+echo "Preparing commit change for \$(pwd)"
+echo "Map file at $MAP_FILE"
+END
+)"
+
+ENV_FILTER="$(cat <<END
+if test "\$GIT_AUTHOR_EMAIL" = "mike-n@narod.ru"; then
+  GIT_AUTHOR_EMAIL='mike@example.com'
+  GIT_AUTHOR_EMAIL='Mike'
+fi
+if test "\$GIT_COMMITTER_EMAIL" = "mike-n@narod.ru"; then
+  GIT_COMMITTER_NAME='mike@example.com'
+  GIT_COMMITTER_EMAIL='Mike'
+fi
+END
+)"
+
+COMMIT_FILTER="$(cat <<END
+OUT="\$(git commit-tree "\$@")"
+echo "\$GIT_COMMIT \$OUT" >> "$MAP_FILE"
+echo -n \$OUT
+END
+)"
+
+git filter-branch \
+  --force \
+  --setup "$SETUP" \
+  --env-filter "$ENV_FILTER" \
+  --commit-filter "$COMMIT_FILTER" \
+  -- \
+  --all

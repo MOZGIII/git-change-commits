@@ -1,0 +1,38 @@
+#!/bin/bash
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
+prepare() {
+  # Remove test repo
+  rm -rf test-repo
+
+  # Unpack sample repo
+  tar xf test-repo.tar.xz
+}
+
+newline() {
+  echo -en '\n'
+}
+
+show-history() {
+  git log --pretty=oneline | cat
+}
+
+# Prepare
+prepare
+
+# Go to the test repo dir
+cd test-repo
+
+# Show old history
+show-history
+
+newline
+
+# Run the code
+../../bin/git-change-commits
+
+newline
+
+# Show new histoty
+show-history
